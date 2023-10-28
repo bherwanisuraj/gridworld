@@ -1,16 +1,38 @@
-# This is a sample Python script.
+import numpy as np
+import matplotlib.pyplot as plt
+import gym
+from gym.envs.registration import register
+import time
+import os
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+try:
+    register(
+        id='FrozenLakeNotSlippery-v0',
+        entry_point='gym.envs.toy_text:FrozenLakeEnv',
+        kwargs={'map_name':'4x4', 'is_slippery': False},
+        max_episode_steps=100,
+        reward_threshold=0.78, # optimum = .8196
+    )
+except:
+    print('Already Registered')
+
+env = gym.make('FrozenLakeNotSlippery-v0' , render_mode="human")
+env.reset()
+
+for step in range(5):
+
+    env.render()
+    action = env.action_space.sample()
+    observation = env.step(action)
+    time.sleep(0.1)
+    # print(observation)
+    if observation[2]:
+        env.reset()
+
+env.close()
+
+qTable = np.zeros([env.observation_space.n, env.action_space.n])
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
