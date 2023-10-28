@@ -5,6 +5,15 @@ from gym.envs.registration import register
 import time
 import os
 
+EPOCHS = 20000
+ALPHA = 0.8
+GAMMA = 0.95
+
+epsilon = 1.0
+min_epsilon = 0.1
+max_epsilon = 1.0
+decay = 0.001
+
 try:
     register(
         id='FrozenLakeNotSlippery-v0',
@@ -17,21 +26,30 @@ except:
     print('Already Registered')
 
 env = gym.make('FrozenLakeNotSlippery-v0' , render_mode="human")
-env.reset()
-
-for step in range(5):
-
-    env.render()
-    action = env.action_space.sample()
-    observation = env.step(action)
-    time.sleep(0.1)
-    # print(observation)
-    if observation[2]:
-        env.reset()
-
-env.close()
+# env.reset()
+#
+# for step in range(5):
+#
+#     env.render()
+#     action = env.action_space.sample()
+#     observation = env.step(action)
+#     time.sleep(0.1)
+#     # print(observation)
+#     if observation[2]:
+#         env.reset()
+#
+# env.close()
 
 qTable = np.zeros([env.observation_space.n, env.action_space.n])
+
+def egas(epsilon, qTable, discrete_space):
+    rn = np.random.random()
+    # exploitation
+    if rn > epsilon:
+        state = qTable[discrete_space, :]
+        action = np.argmax(state)
+    else:
+        action = env.action_space.sample()
 
 
 
