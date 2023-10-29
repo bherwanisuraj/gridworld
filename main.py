@@ -42,14 +42,23 @@ env = gym.make('FrozenLakeNotSlippery-v0' , render_mode="human")
 
 qTable = np.zeros([env.observation_space.n, env.action_space.n])
 
-def egas(epsilon, qTable, discrete_space):
+def egas(epsilon, qTable, discrete_state):
     rn = np.random.random()
     # exploitation
     if rn > epsilon:
-        state = qTable[discrete_space, :]
+        state = qTable[discrete_state, :]
         action = np.argmax(state)
     else:
         action = env.action_space.sample()
+
+def computeQValue(currentQvalue, reward, nextQValue):
+    return currentQvalue + ALPHA*(reward+GAMMA*nextQValue-currentQvalue)
+
+def decay(epsilon, EPOCH):
+    return min_epsilon+(max_epsilon-min_epsilon)+np.exp(-decay*EPOCH)
+
+
+
 
 
 
