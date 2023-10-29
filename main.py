@@ -12,7 +12,7 @@ GAMMA = 0.95
 epsilon = 1.0
 min_epsilon = 0.1
 max_epsilon = 1.0
-decay = 0.001
+decay_val = 0.001
 
 try:
     register(
@@ -25,7 +25,7 @@ try:
 except:
     print('Already Registered')
 
-env = gym.make('FrozenLakeNotSlippery-v0' , render_mode="human")
+env = gym.make('FrozenLakeNotSlippery-v0', render_mode="human")
 # env.reset()
 #
 # for step in range(5):
@@ -51,15 +51,55 @@ def egas(epsilon, qTable, discrete_state):
     else:
         action = env.action_space.sample()
 
-def computeQValue(currentQvalue, reward, nextQValue):
-    return currentQvalue + ALPHA*(reward+GAMMA*nextQValue-currentQvalue)
+    return action
+
+def computeQValue(currentQvalue, reward, nextOptimalQValue):
+    return currentQvalue + ALPHA*(reward+GAMMA*nextOptimalQValue-currentQvalue)
 
 def decay(epsilon, EPOCH):
-    return min_epsilon+(max_epsilon-min_epsilon)+np.exp(-decay*EPOCH)
+    return min_epsilon+(max_epsilon-min_epsilon)*np.exp(-(decay_val)*EPOCH)
+
+rewards = []
+interval = 1000
+
+for episode in range(EPOCHS):
+    state = env.reset()
+    terminated = False
+    totalRewards = 0
+
+    while not terminated:
+        #ACTION
+        action = egas(epsilon, qTable, state)
 
 
+        #Get values such as state, reward, done, info
+        obs, reward, terminated, truncated, info = env.step(action)
+        print()
 
+        #Get Current Q Value
 
+        currentQValue = qTable[obs, action]
 
+        #Get Optimal q value
+        nextOptimalQValue = np.max(qTable[obs, :])
 
+        #Compute next Q Value
+        nextQValue = computeQValue(currentQValue, reward, nextOptimalQValue)
 
+        #Update the table
+        qTable[obs, action] = nextQValue
+
+        #Track Rewards
+        totalRewards = totalRewards+reward
+
+        #Update State
+        state = obs
+
+    episode+=1
+    epsilon = decay(epsilon, episode)
+    rewards.append(totalRewards)
+    # if episode % interval == 0:
+    #     print(np.sum(rewards))
+    print(np.sum(rewards))
+
+env.close()
