@@ -5,12 +5,12 @@ from gym.envs.registration import register
 import time
 import os
 
-EPOCHS = 40000
+EPOCHS = 20000
 ALPHA = 0.8
 GAMMA = 0.95
 
 epsilon = 1.0
-min_epsilon = 0.1
+min_epsilon = 0.01
 max_epsilon = 1.0
 decay_val = 0.001
 
@@ -25,7 +25,7 @@ try:
 except:
     print('Already Registered')
 
-env = gym.make('FrozenLakeNotSlippery-v0' )#render_mode="human"
+env = gym.make('FrozenLakeNotSlippery-v0')#render_mode="human"rgb_array
 # env.reset()
 #
 # for step in range(5):
@@ -48,28 +48,31 @@ def egas(epsilon, qTable, discrete_state):
     # exploitation
     if rn > epsilon:
         # print(discrete_state)
-        state = qTable[discrete_state, :]
-        action = np.argmax(state)
+        # print('Exploit')
+        state_row = qTable[discrete_state, :]
+        action = np.argmax(state_row)
         # print(qTable)
     else:
+        # print('random')
         action = env.action_space.sample()
 
     return action
 
 def computeQValue(currentQvalue, reward, nextOptimalQValue):
-    if reward>0:
-
-        print(f"computeQValue : {currentQvalue + ALPHA*(reward+GAMMA*nextOptimalQValue-currentQvalue)}")
+    # if reward>0:
+    #
+    #     print(f"computeQValue : {currentQvalue + ALPHA*(reward+GAMMA*nextOptimalQValue-currentQvalue)}")
 
     return currentQvalue + ALPHA*(reward+GAMMA*nextOptimalQValue-currentQvalue)
 
 def decay(epsilon, EPOCH):
-    return min_epsilon+(max_epsilon-min_epsilon)*np.exp(-(decay_val)*EPOCH)
+    return min_epsilon+(max_epsilon-min_epsilon)*np.exp(-decay_val*EPOCH)
 
 rewards = []
 interval = 1000
 
 for episode in range(EPOCHS):
+    # print(episode)
     state = env.reset()
     # print(f"first state {state}")
     terminated = False
@@ -77,27 +80,24 @@ for episode in range(EPOCHS):
 
     while not terminated:
         #ACTION
-        # print(state)
-        try:
-            action = egas(epsilon, qTable, state[0])
-        except:
-            action = egas(epsilon, qTable, state)
-
+        if type(state) is not int:
+            state = state[0]
+        action = egas(epsilon, qTable, state)
 
         #Get values such as state, reward, done, info
-        obs, reward, terminated, truncated, info = env.step(action)
-        if reward>0:
-            print(f"Obs: {obs}, reward: {reward}, terminated: {terminated}, truncated: {truncated}, info: {info}")
+        new_state, reward, terminated, truncated, info = env.step(action)
+        # if reward>0:
+        #     print(f"new_state: {new_state}, reward: {reward}, terminated: {terminated}, truncated: {truncated}, info: {info}")
 
         #Get Current Q Value
 
-        currentQValue = qTable[obs, action]
+        currentQValue = qTable[state, action]
         # print(currentQValue)
 
         #Get Optimal q value
-        nextOptimalQValue = np.max(qTable[obs, :])
-        if nextOptimalQValue > 0:
-            print(f"nextOptimalQValue : {nextOptimalQValue}")
+        nextOptimalQValue = np.max(qTable[new_state, :])
+        # if nextOptimalQValue > 0:
+        #     print(f"nextOptimalQValue : {nextOptimalQValue}")
 
         #Compute next Q Value
         nextQValue = computeQValue(currentQValue, reward, nextOptimalQValue)
@@ -108,9 +108,9 @@ for episode in range(EPOCHS):
         #     print(nextQValue)
 
         #Update the table
-        qTable[obs, action] = nextQValue
-        if nextQValue > 0:
-            print(qTable)
+        qTable[state, action] = nextQValue
+        # if nextQValue > 0:
+        #     print(qTable)
 
         #Track Rewards
         totalRewards = totalRewards+reward
@@ -118,7 +118,7 @@ for episode in range(EPOCHS):
 
         #Update State
 
-        state = obs
+        state = new_state
         # print(state)
         # print("-----------------------------------------------------------")
     # print(f"this obs {state}")
@@ -127,8 +127,8 @@ for episode in range(EPOCHS):
     # print(epsilon)
     rewards.append(totalRewards)
     if episode % interval == 0:
-        # print(np.sum(rewards))
-        pass
+        print(np.sum(rewards))
+        # pass
     # print(f"reward {np.sum(rewards)}")
 
 env.close()
