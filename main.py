@@ -7,12 +7,12 @@ import os
 
 EPOCHS = 20000
 ALPHA = 0.8
-GAMMA = 0.95
+GAMMA = 0.9
 
 epsilon = 1.0
 min_epsilon = 0.01
 max_epsilon = 1.0
-decay_val = 0.001
+decay_val = 0.0045
 
 try:
     register(
