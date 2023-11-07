@@ -68,67 +68,15 @@ def computeQValue(currentQvalue, reward, nextOptimalQValue):
 def decay(epsilon, EPOCH):
     return min_epsilon+(max_epsilon-min_epsilon)*np.exp(-decay_val*EPOCH)
 
-rewards = []
-interval = 1000
 
-for episode in range(EPOCHS):
-    # print(episode)
-    state = env.reset()
-    # print(f"first state {state}")
-    terminated = False
-    totalRewards = 0
+def newDecay(epsilon, decay_value, epoch, burn=1, epsilonEnd = 10000):
+    if burn <= epoch <= epsilonEnd:
+        epsilon-=decay_value
 
-    while not terminated:
-        #ACTION
-        if type(state) is not int:
-            state = state[0]
-        action = egas(epsilon, qTable, state)
+    return epsilon
 
-        #Get values such as state, reward, done, info
-        new_state, reward, terminated, truncated, info = env.step(action)
-        # if reward>0:
-        #     print(f"new_state: {new_state}, reward: {reward}, terminated: {terminated}, truncated: {truncated}, info: {info}")
+def punish(done, reward, points):
+    if points < 150 and done:
+        reward -= 150
 
-        #Get Current Q Value
-
-        currentQValue = qTable[state, action]
-        # print(currentQValue)
-
-        #Get Optimal q value
-        nextOptimalQValue = np.max(qTable[new_state, :])
-        # if nextOptimalQValue > 0:
-        #     print(f"nextOptimalQValue : {nextOptimalQValue}")
-
-        #Compute next Q Value
-        nextQValue = computeQValue(currentQValue, reward, nextOptimalQValue)
-        # if reward>0:
-        #     print(reward)
-        # if nextQValue > 0:
-        #
-        #     print(nextQValue)
-
-        #Update the table
-        qTable[state, action] = nextQValue
-        # if nextQValue > 0:
-        #     print(qTable)
-
-        #Track Rewards
-        totalRewards = totalRewards+reward
-        # print(totalRewards)
-
-        #Update State
-
-        state = new_state
-        # print(state)
-        # print("-----------------------------------------------------------")
-    # print(f"this obs {state}")
-    episode+=1
-    epsilon = decay(epsilon, episode)
-    # print(epsilon)
-    rewards.append(totalRewards)
-    if episode % interval == 0:
-        print(np.sum(rewards))
-        # pass
-    # print(f"reward {np.sum(rewards)}")
-
-env.close()
+    return reward
