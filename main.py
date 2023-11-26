@@ -14,46 +14,46 @@ min_epsilon = 0.01
 max_epsilon = 1.0
 decay_val = 0.0045
 
-try:
-    register(
-        id='FrozenLakeNotSlippery-v0',
-        entry_point='gym.envs.toy_text:FrozenLakeEnv',
-        kwargs={'map_name':'4x4', 'is_slippery': False},
-        max_episode_steps=100,
-        reward_threshold=0.78, # optimum = .8196
-    )
-except:
-    print('Already Registered')
-
-env = gym.make('FrozenLakeNotSlippery-v0')#render_mode="human"rgb_array
-# env.reset()
+# try:
+#     register(
+#         id='FrozenLakeNotSlippery-v0',
+#         entry_point='gym.envs.toy_text:FrozenLakeEnv',
+#         kwargs={'map_name':'4x4', 'is_slippery': False},
+#         max_episode_steps=100,
+#         reward_threshold=0.78, # optimum = .8196
+#     )
+# except:
+#     print('Already Registered')
 #
-# for step in range(5):
+# env = gym.make('FrozenLakeNotSlippery-v0')#render_mode="human"rgb_array
+# # env.reset()
+# #
+# # for step in range(5):
+# #
+# #     env.render()
+# #     action = env.action_space.sample()
+# #     observation = env.step(action)
+# #     time.sleep(0.1)
+# #     # print(observation)
+# #     if observation[2]:
+# #         env.reset()
+# #
+# # env.close()
 #
-#     env.render()
-#     action = env.action_space.sample()
-#     observation = env.step(action)
-#     time.sleep(0.1)
-#     # print(observation)
-#     if observation[2]:
-#         env.reset()
-#
-# env.close()
-
-qTable = np.zeros([env.observation_space.n, env.action_space.n])
+# qTable = np.zeros([env.observation_space.n, env.action_space.n])
 
 
-def egas(epsilon, qTable, discrete_state):
+def egas(epsilon, qTable, discrete_state,env):
     rn = np.random.random()
     # exploitation
     if rn > epsilon:
         # print(discrete_state)
-        # print('Exploit')
+        print('Exploit')
         state_row = qTable[discrete_state, :]
         action = np.argmax(state_row)
         # print(qTable)
     else:
-        # print('random')
+        print('random')
         action = env.action_space.sample()
 
     return action
