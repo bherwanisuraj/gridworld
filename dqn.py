@@ -1,4 +1,3 @@
-import numpy
 import random
 from _collections import deque
 import gym
@@ -43,7 +42,7 @@ target_model = clone_model(model)
 
 
 def egas(model, epsilon, obs):
-    if np.random.rand() > epsilon:
+    if np.random.random() > epsilon:
         # print(f"Inside {obs.shape}")
         # print(obs.shape)
         prediction = model.predict(obs, verbose=0)
@@ -62,7 +61,7 @@ BATCH_SIZE = 32
 
 def replay(buffer, batch_size, model, target_model):
     if len(buffer)<batch_size:
-        return 0
+        return
     # print(f"Lenght {len(buffer)}")
     samples = random.sample(buffer, batch_size)
     target_batch = []
@@ -95,12 +94,11 @@ def replay(buffer, batch_size, model, target_model):
             target[0][actions[i]] = rewards[i]+q_value*GAMMA
 
         target_batch.append(target)
-
     model.fit(np.array(states), np.array(target_batch), epochs=1, verbose=0)
 
 
 def update_model_handler(epoch, update_target_model, model, target_model):
-    if epoch >0 and update_target_model % epoch == 0:
+    if epoch >0 and epoch % update_target_model == 0:
         target_model.set_weights(model.get_weights())
 
 
@@ -137,4 +135,3 @@ for epoch in range(EPOCHS):
 
     if epoch%25 == 0:
         print(f" epoch - {epoch}  |  points - {points}  |  epsilon - {EPSILON}  |  bfs - {best_so_far}")
-
